@@ -1,6 +1,6 @@
 package com.macro.mall.dto;
 
-import com.macro.mall.validator.FlagValidator;
+//import com.macro.mall.validator.FlagValidator;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Min;
@@ -20,10 +20,10 @@ public class PmsProductCategoryParam {
     @ApiModelProperty("分类单位")
     private String productUnit;
     @ApiModelProperty("是否在导航栏显示")
-    @FlagValidator(value = {"0","1"},message = "状态只能为0或1")
+//    @FlagValidator(value = {"0","1"},message = "状态只能为0或1")
     private Integer navStatus;
     @ApiModelProperty("是否进行显示")
-    @FlagValidator(value = {"0","1"},message = "状态只能为0或1")
+//    @FlagValidator(value = {"0","1"},message = "状态只能为0或1")
     private Integer showStatus;
     @ApiModelProperty("排序")
     @Min(value = 0,message = "排序最小为0")

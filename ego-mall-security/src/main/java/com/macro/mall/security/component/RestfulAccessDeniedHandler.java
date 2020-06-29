@@ -13,6 +13,7 @@ import java.io.IOException;
 
 /**
  * 自定义返回结果：没有权限访问时
+ * AccessDeineHandler 用来解决认证过的用户访问无权限资源时的异常
  * Created by macro on 2018/4/26.
  */
 public class RestfulAccessDeniedHandler implements AccessDeniedHandler{

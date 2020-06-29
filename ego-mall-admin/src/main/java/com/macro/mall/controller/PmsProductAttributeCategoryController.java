@@ -15,8 +15,11 @@ import java.util.List;
 
 /**
  * 商品属性分类Controller
- * Created by macro on 2018/4/26.
- */
+ *
+ * @program: ego-mall
+ * @author: ShyBlue
+ * @create: 2020-06-24 14:48
+ **/
 @Controller
 @Api(tags = "PmsProductAttributeCategoryController", description = "商品属性分类管理")
 @RequestMapping("/productAttribute/category")

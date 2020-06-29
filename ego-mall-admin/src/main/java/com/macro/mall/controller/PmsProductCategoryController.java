@@ -31,7 +31,7 @@ public class PmsProductCategoryController {
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult create(@Validated @RequestBody PmsProductCategoryParam productCategoryParam,
-                         BindingResult result) {
+                               BindingResult result) {
         int count = productCategoryService.create(productCategoryParam);
         if (count > 0) {
             return CommonResult.success(count);
@@ -44,9 +44,9 @@ public class PmsProductCategoryController {
     @RequestMapping(value = "/update/{id}", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult update(@PathVariable Long id,
-                         @Validated
-                         @RequestBody PmsProductCategoryParam productCategoryParam,
-                         BindingResult result) {
+                               @Validated
+                               @RequestBody PmsProductCategoryParam productCategoryParam,
+                               BindingResult result) {
         int count = productCategoryService.update(id, productCategoryParam);
         if (count > 0) {
             return CommonResult.success(count);
@@ -89,7 +89,7 @@ public class PmsProductCategoryController {
     @RequestMapping(value = "/update/navStatus", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult updateNavStatus(@RequestParam("ids") List<Long> ids, @RequestParam("navStatus") Integer navStatus) {
-        int count = productCategoryService.updateNavStatus(ids, navStatus);
+        int count = productCategoryService.updateNavStatus(navStatus,ids);
         if (count > 0) {
             return CommonResult.success(count);
         } else {
@@ -101,7 +101,7 @@ public class PmsProductCategoryController {
     @RequestMapping(value = "/update/showStatus", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult updateShowStatus(@RequestParam("ids") List<Long> ids, @RequestParam("showStatus") Integer showStatus) {
-        int count = productCategoryService.updateShowStatus(ids, showStatus);
+        int count = productCategoryService.updateShowStatus(showStatus,ids);
         if (count > 0) {
             return CommonResult.success(count);
         } else {

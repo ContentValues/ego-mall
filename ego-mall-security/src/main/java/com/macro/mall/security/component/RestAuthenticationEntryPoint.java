@@ -13,6 +13,8 @@ import java.io.IOException;
 
 /**
  * 自定义返回结果：未登录或登录过期
+ *
+ * AuthenticationEntryPoint 用来解决匿名用户访问无权限资源时的异常
  * Created by macro on 2018/5/14.
  */
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {

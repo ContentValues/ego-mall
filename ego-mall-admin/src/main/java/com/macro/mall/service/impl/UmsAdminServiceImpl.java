@@ -1,34 +1,19 @@
 package com.macro.mall.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageHelper;
 import com.macro.mall.bo.AdminUserDetails;
 import com.macro.mall.common.exception.ApiException;
-import com.macro.mall.dao.UmsAdminPermissionRelationDao;
 import com.macro.mall.dao.UmsAdminRoleRelationDao;
+import com.macro.mall.dao.UmsRoleDao;
 import com.macro.mall.dto.UmsAdminParam;
-import com.macro.mall.dto.UpdateAdminPasswordParam;
 import com.macro.mall.mapper.UmsAdminLoginLogMapper;
 import com.macro.mall.mapper.UmsAdminMapper;
-import com.macro.mall.mapper.UmsAdminPermissionRelationMapper;
 import com.macro.mall.mapper.UmsAdminRoleRelationMapper;
 import com.macro.mall.model.*;
 import com.macro.mall.security.util.JwtTokenUtil;
-import com.macro.mall.service.UmsAdminCacheService;
 import com.macro.mall.service.UmsAdminService;
-import org.apache.http.util.TextUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -37,170 +22,74 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
- * UmsAdminService实现类
- * Created by macro on 2018/4/26.
- */
+ * @program: ego-mall
+ * @author: ShyBlue
+ * @create: 2020-06-18 10:18
+ **/
 @Service
 public class UmsAdminServiceImpl implements UmsAdminService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UmsAdminServiceImpl.class);
+
+    @Autowired
+    UmsAdminMapper umsAdminMapper;
+
+    @Autowired
+    UmsAdminLoginLogMapper umsAdminLoginLogMapper;
+
+    @Autowired
+    JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    UmsAdminRoleRelationDao umsAdminRoleRelationDao;
+
     @Resource
-    private JwtTokenUtil jwtTokenUtil;
-    //    @Autowired
-//    private PasswordEncoder passwordEncoder;
+    UmsRoleDao umsRoleDao;
+
     @Resource
-    private UmsAdminMapper adminMapper;
-    @Resource
-    private UmsAdminRoleRelationMapper adminRoleRelationMapper;
-    @Resource
-    private UmsAdminRoleRelationDao adminRoleRelationDao;
-    @Resource
-    private UmsAdminPermissionRelationMapper adminPermissionRelationMapper;
-    @Resource
-    private UmsAdminPermissionRelationDao adminPermissionRelationDao;
-    @Resource
-    private UmsAdminLoginLogMapper loginLogMapper;
-    @Resource
-    private UmsAdminCacheService adminCacheService;
+    UmsAdminRoleRelationMapper umsAdminRoleRelationMapper;
+
 
     @Override
     public UmsAdmin getAdminByUsername(String username) {
         UmsAdminExample example = new UmsAdminExample();
         example.createCriteria().andUsernameEqualTo(username);
-        List<UmsAdmin> adminList = adminMapper.selectByExample(example);
+        List<UmsAdmin> adminList = umsAdminMapper.selectByExample(example);
         if (adminList != null && adminList.size() > 0) {
             return adminList.get(0);
         }
         return null;
     }
 
-    @Override
-    public UmsAdmin register(UmsAdminParam umsAdminParam) {
-
-        UmsAdminExample example = new UmsAdminExample();
-        example.createCriteria().andUsernameEqualTo(umsAdminParam.getUsername());
-        if(!adminMapper.selectByExample(example).isEmpty()){
-            //存在同名的用户 不能注册
-            return null;
-        }
-        UmsAdmin user = new UmsAdmin();
-        BeanUtils.copyProperties(umsAdminParam,user);
-        user.setCreateTime(new Date());
-        user.setStatus(1);
-        adminMapper.insert(user);
-        return user;
-    }
 
     @Override
     public String login(String username, String password) {
-        String token = null;
-        //密码需要客户端加密后传递
-        try {
-            UserDetails userDetails = loadUserByUsername(username);
-            if (!userDetails.getPassword().equals(password)) {
-                throw new BadCredentialsException("密码不正确");
-            }
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            token = jwtTokenUtil.generateToken(userDetails);
-            insertLoginLog(username);
-        } catch (AuthenticationException e) {
-            LOGGER.warn("登录异常:{}", e.getMessage());
+
+        /**
+         *  1 根据用户名查询用户
+         *
+         *  2 校验用户
+         *
+         *  3 生成token
+         *
+         *  4 更新登录时间
+         *
+         *  5 插入登录日志
+         *
+         */
+        AdminUserDetails adminUserDetails = loadUserByUsername(username);
+        if (!adminUserDetails.getPassword().equals(password)) {
+            throw new ApiException("密码不匹配");
         }
+        String token = jwtTokenUtil.generateToken(adminUserDetails);
+        updateLoginTimeByUsername(username);
+        insertLoginLog(username);
         return token;
-    }
-
-    @Override
-    public String refreshToken(String oldToken) {
-        return null;
-    }
-
-    @Override
-    public UmsAdmin getItem(Long id) {
-        return null;
-    }
-
-    @Override
-    public List<UmsAdmin> list(String keyword, Integer pageSize, Integer pageNum) {
-        PageHelper.startPage(pageNum, pageSize);
-        UmsAdminExample example = new UmsAdminExample();
-        if (!TextUtils.isEmpty(keyword)) {
-            example.createCriteria().andUsernameLike("%" + keyword + "%");
-            example.or(example.createCriteria().andNickNameLike("%" + keyword + "%"));
-        }
-        return adminMapper.selectByExample(example);
-    }
-
-    @Override
-    public int update(Long id, UmsAdmin admin) {
-        admin.setId(id);
-        return adminMapper.updateByPrimaryKeySelective(admin);
-    }
-
-    @Override
-    public int delete(Long id) {
-        return adminMapper.deleteByPrimaryKey(id);
-    }
-
-    @Override
-    public int updateRole(Long adminId, List<Long> roleIds) {
-        //先删除原来的关系
-        UmsAdminRoleRelationExample example = new UmsAdminRoleRelationExample();
-        example.createCriteria().andAdminIdEqualTo(adminId);
-        adminRoleRelationMapper.deleteByExample(example);
-
-        roleIds.stream().map(roleId -> {
-            UmsAdminRoleRelation relation = new UmsAdminRoleRelation();
-            relation.setAdminId(adminId);
-            relation.setRoleId(roleId);
-            return relation;
-        }).forEach(umsAdminRoleRelation -> {
-            adminRoleRelationMapper.insert(umsAdminRoleRelation);
-        });
-        return roleIds.size();
-    }
-
-    @Override
-    public List<UmsRole> getRoleList(Long adminId) {
-        return adminRoleRelationDao.getRoleList(adminId);
-    }
-
-    @Override
-    public List<UmsResource> getResourceList(Long adminId) {
-        return adminRoleRelationDao.getResourceList(adminId);
-    }
-
-    @Override
-    public int updatePermission(Long adminId, List<Long> permissionIds) {
-        return 0;
-    }
-
-    @Override
-    public List<UmsPermission> getPermissionList(Long adminId) {
-        return null;
-    }
-
-    @Override
-    public int updatePassword(UpdateAdminPasswordParam updatePasswordParam) {
-        return 0;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) {
-        //获取用户信息
-        UmsAdmin admin = getAdminByUsername(username);
-        if (admin != null) {
-            List<UmsResource> resourceList = getResourceList(admin.getId());
-            return new AdminUserDetails(admin, resourceList);
-        }
-        throw new UsernameNotFoundException("用户名或密码错误");
     }
 
 
@@ -218,7 +107,97 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
         loginLog.setIp(request.getRemoteAddr());
-        loginLogMapper.insert(loginLog);
+        umsAdminLoginLogMapper.insert(loginLog);
     }
 
+    /**
+     * 根据用户名修改登录时间
+     */
+    private void updateLoginTimeByUsername(String username) {
+        UmsAdmin record = new UmsAdmin();
+        record.setLoginTime(new Date());
+        UmsAdminExample example = new UmsAdminExample();
+        example.createCriteria().andUsernameEqualTo(username);
+        umsAdminMapper.updateByExampleSelective(record, example);
+    }
+
+
+    @Override
+    public AdminUserDetails loadUserByUsername(String username) {
+        UmsAdmin umsAdmin = getAdminByUsername(username);
+        if (umsAdmin != null) {
+            List<UmsResource> resources = umsAdminRoleRelationDao.getResourceList(umsAdmin.getId());
+            return new AdminUserDetails(umsAdmin, resources);
+        }
+        throw new ApiException("用户名或密码错误");
+    }
+
+    @Override
+    public String refreshToken(String token) {
+        return jwtTokenUtil.refreshHeadToken(token);
+    }
+
+    @Override
+    public List<UmsAdmin> list(String keyword, Integer pageSize, Integer pageNum) {
+        PageHelper.startPage(pageNum, pageSize);
+        UmsAdminExample example = new UmsAdminExample();
+        if (!StringUtils.isEmpty(keyword)) {
+            example.createCriteria().andUsernameLike("%" + keyword + "%");
+            example.or(example.createCriteria().andNickNameLike("%" + keyword + "%"));
+        }
+        return umsAdminMapper.selectByExample(example);
+    }
+
+    @Override
+    public int delete(Long id) {
+        return umsAdminMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public int register(UmsAdminParam umsAdminParam) {
+
+        UmsAdminExample example = new UmsAdminExample();
+        example.createCriteria().andUsernameEqualTo(umsAdminParam.getUsername());
+        if (!umsAdminMapper.selectByExample(example).isEmpty()) {
+            return -1;
+        }
+        UmsAdmin umsAdmin = new UmsAdmin();
+        BeanUtils.copyProperties(umsAdminParam, umsAdmin);
+        Date date = new Date();
+        umsAdmin.setLoginTime(date);
+        umsAdmin.setCreateTime(date);
+        umsAdmin.setStatus(1);
+        return umsAdminMapper.insertSelective(umsAdmin);
+    }
+
+    @Override
+    public int update(Long id, UmsAdminParam admin) {
+        UmsAdmin umsAdmin = new UmsAdmin();
+        BeanUtils.copyProperties(admin, umsAdmin);
+        umsAdmin.setId(id);
+        return umsAdminMapper.updateByPrimaryKeySelective(umsAdmin);
+    }
+
+    @Override
+    public List<UmsRole> getRoleList(Long adminId) {
+        return umsRoleDao.getRoleList(adminId);
+    }
+
+    @Override
+    public int updateRole(Long adminId, List<Long> roleIds) {
+        UmsAdminRoleRelationExample example = new UmsAdminRoleRelationExample();
+        example.createCriteria().andAdminIdEqualTo(adminId);
+        umsAdminRoleRelationMapper.deleteByExample(example);
+        if (!CollectionUtils.isEmpty(roleIds)) {
+            roleIds.stream()
+                    .map(roleId -> {
+                        UmsAdminRoleRelation relation = new UmsAdminRoleRelation();
+                        relation.setAdminId(adminId);
+                        relation.setRoleId(roleId);
+                        return relation;
+                    })
+                    .forEach(it -> umsAdminRoleRelationMapper.insert(it));
+        }
+        return 1;
+    }
 }

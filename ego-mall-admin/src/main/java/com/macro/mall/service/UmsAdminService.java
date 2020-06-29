@@ -1,99 +1,96 @@
 package com.macro.mall.service;
 
+
+import com.macro.mall.dto.UmsAdminLoginParam;
 import com.macro.mall.dto.UmsAdminParam;
-import com.macro.mall.dto.UpdateAdminPasswordParam;
 import com.macro.mall.model.UmsAdmin;
-import com.macro.mall.model.UmsPermission;
-import com.macro.mall.model.UmsResource;
 import com.macro.mall.model.UmsRole;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
 /**
- * 后台管理员Service
- * Created by macro on 2018/4/26.
- */
+ * @program: ego-mall
+ * @author: ShyBlue
+ * @create: 2020-06-18 10:17
+ **/
 public interface UmsAdminService {
+
     /**
-     * 根据用户名获取后台管理员
+     * 登录接口
+     *
+     * @param username
+     * @param password
+     * @return
+     */
+    String login(String username, String password);
+
+    /**
+     *
+     * @param username
+     * @return
      */
     UmsAdmin getAdminByUsername(String username);
 
-    /**
-     * 注册功能
-     */
-    UmsAdmin register(UmsAdminParam umsAdminParam);
 
     /**
-     * 登录功能
-     * @param username 用户名
-     * @param password 密码
-     * @return 生成的JWT的token
+     * 获取用户信息
      */
-    String login(String username,String password);
+    UserDetails loadUserByUsername(String username);
+
+
+    /***
+     * 刷新token
+     * @param token
+     * @return
+     */
+    String refreshToken(String token);
+
 
     /**
-     * 刷新token的功能
-     * @param oldToken 旧的token
-     */
-    String refreshToken(String oldToken);
-
-    /**
-     * 根据用户id获取用户
-     */
-    UmsAdmin getItem(Long id);
-
-    /**
-     * 根据用户名或昵称分页查询用户
+     * 分页加载用户列表
+     * @param keyword
+     * @param pageSize
+     * @param pageNum
+     * @return
      */
     List<UmsAdmin> list(String keyword, Integer pageSize, Integer pageNum);
 
-    /**
-     * 修改指定用户信息
-     */
-    int update(Long id, UmsAdmin admin);
 
     /**
-     * 删除指定用户
+     * 删除用户
+     * @return
      */
     int delete(Long id);
 
+
     /**
-     * 修改用户角色关系
+     * 用户注册
+     * @param umsAdminParam
+     * @return
      */
-    @Transactional
-    int updateRole(Long adminId, List<Long> roleIds);
+    int register(UmsAdminParam umsAdminParam);
+
+    /**
+     * 修改用户信息
+     * @param admin
+     * @return
+     */
+    int update(Long id, UmsAdminParam admin);
 
     /**
      * 获取用户对于角色
      */
     List<UmsRole> getRoleList(Long adminId);
 
-    /**
-     * 获取指定用户的可访问资源
-     */
-    List<UmsResource> getResourceList(Long adminId);
 
     /**
-     * 修改用户的+-权限
+     * 给用户分配角色
+     * @param adminId
+     * @param roleIds
+     * @return
      */
-    @Transactional
-    int updatePermission(Long adminId, List<Long> permissionIds);
+    int updateRole( Long adminId, List<Long> roleIds);
 
-    /**
-     * 获取用户所有权限（包括角色权限和+-权限）
-     */
-    List<UmsPermission> getPermissionList(Long adminId);
-
-    /**
-     * 修改密码
-     */
-    int updatePassword(UpdateAdminPasswordParam updatePasswordParam);
-
-    /**
-     * 获取用户信息
-     */
-    UserDetails loadUserByUsername(String username);
 }

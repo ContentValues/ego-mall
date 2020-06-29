@@ -8,17 +8,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * SpringSecurity需要的用户详情
- * Created by macro on 2018/4/26.
- */
+ * @program: ego-mall
+ * @author: ShyBlue
+ * @create: 2020-06-18 10:34
+ **/
 public class AdminUserDetails implements UserDetails {
-    private UmsAdmin umsAdmin;
-    private List<UmsResource> resourceList;
-    public AdminUserDetails(UmsAdmin umsAdmin,List<UmsResource> resourceList) {
+
+    public UmsAdmin umsAdmin;
+    public List<UmsResource> resourceList;
+
+    public AdminUserDetails(UmsAdmin umsAdmin, List<UmsResource> resourceList) {
         this.umsAdmin = umsAdmin;
         this.resourceList = resourceList;
     }
@@ -26,15 +28,9 @@ public class AdminUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         //返回当前用户的角色
-//        return resourceList.stream()
-//                .map(role ->new SimpleGrantedAuthority(role.getId()+":"+role.getName()))
-//                .collect(Collectors.toList());
-        return resourceList.stream().map(new Function<UmsResource, SimpleGrantedAuthority>() {
-            @Override
-            public SimpleGrantedAuthority apply(UmsResource role) {
-                return new SimpleGrantedAuthority(role.getId()+":"+role.getName());
-            }
-        }).collect(Collectors.toList());
+        return resourceList.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getId() + ":" + role.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -64,6 +60,6 @@ public class AdminUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return umsAdmin.getStatus().equals(1);
+        return umsAdmin.getStatus() == 1;
     }
 }

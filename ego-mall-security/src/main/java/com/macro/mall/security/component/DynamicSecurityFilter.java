@@ -1,6 +1,8 @@
 package com.macro.mall.security.component;
 
 import com.macro.mall.security.config.IgnoreUrlsConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.SecurityMetadataSource;
@@ -36,6 +38,10 @@ public class DynamicSecurityFilter extends AbstractSecurityInterceptor implement
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+
+        Logger logger=  LoggerFactory.getLogger(this.getClass());
+        logger.info("doFilter()............");
+
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         FilterInvocation fi = new FilterInvocation(servletRequest, servletResponse, filterChain);
         //OPTIONS请求直接放行
@@ -45,7 +51,7 @@ public class DynamicSecurityFilter extends AbstractSecurityInterceptor implement
         }
         //白名单请求直接放行
         PathMatcher pathMatcher = new AntPathMatcher();
-        ignoreUrlsConfig.getUrls().add("/admin/update/1");
+//        ignoreUrlsConfig.getUrls().add("/admin/update/1");
         for (String path : ignoreUrlsConfig.getUrls()) {
             if(pathMatcher.match(path,request.getRequestURI())){
                 fi.getChain().doFilter(fi.getRequest(), fi.getResponse());
@@ -53,6 +59,10 @@ public class DynamicSecurityFilter extends AbstractSecurityInterceptor implement
             }
         }
         //此处会调用AccessDecisionManager中的decide方法进行鉴权操作
+
+       //fi里面有一个被拦截的url
+//里面调用MyInvocationSecurityMetadataSource的getAttributes(Object object)这个方法获取fi对应的所有权限
+//再调用MyAccessDecisionManager的decide方法来校验用户的权限是否足够
         InterceptorStatusToken token = super.beforeInvocation(fi);
         try {
             fi.getChain().doFilter(fi.getRequest(), fi.getResponse());

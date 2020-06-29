@@ -9,11 +9,10 @@
     <version>0.0.1-SNAPSHOT</version>
     <modules>
         <module>ego-mall-common</module>
-        <module>ego-mall-security</module>
         <module>ego-mall-mbg</module>
+        <module>ego-mall-security</module>
+<!--        <module>ego-mall-test</module>-->
         <module>ego-mall-admin</module>
-        <module>ego-mall-portal</module>
-        <module>ego-mall-test</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -44,9 +43,9 @@
         <aliyun-oss.version>2.5.0</aliyun-oss.version>
         <logstash-logback.version>4.8</logstash-logback.version>
         <minio.version>3.0.10</minio.version>
-        <mall-common.version>1.0-SNAPSHOT</mall-common.version>
-        <mall-mbg.version>1.0-SNAPSHOT</mall-mbg.version>
-        <mall-security.version>1.0-SNAPSHOT</mall-security.version>
+        <ego-mall-common.version>0.0.1-SNAPSHOT</ego-mall-common.version>
+        <ego-mall-mbg.version>0.0.1-SNAPSHOT</ego-mall-mbg.version>
+        <ego-mall-security.version>0.0.1-SNAPSHOT</ego-mall-security.version>
     </properties>
 
     <dependencies>
@@ -84,20 +83,20 @@
             <!--mall通用模块-->
             <dependency>
                 <groupId>com.macro.mall</groupId>
-                <artifactId>mall-common</artifactId>
-                <version>${mall-common.version}</version>
+                <artifactId>ego-mall-common</artifactId>
+                <version>${ego-mall-common.version}</version>
             </dependency>
             <!--mall中MBG生成模块-->
             <dependency>
                 <groupId>com.macro.mall</groupId>
-                <artifactId>mall-mbg</artifactId>
-                <version>${mall-mbg.version}</version>
+                <artifactId>ego-mall-mbg</artifactId>
+                <version>${ego-mall-mbg.version}</version>
             </dependency>
             <!--mall安全模块-->
             <dependency>
                 <groupId>com.macro.mall</groupId>
-                <artifactId>mall-security</artifactId>
-                <version>${mall-security.version}</version>
+                <artifactId>ego-mall-security</artifactId>
+                <version>${ego-mall-security.version}</version>
             </dependency>
             <!--MyBatis分页插件starter-->
             <dependency>

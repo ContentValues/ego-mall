@@ -7,12 +7,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 /**
- * 全局跨域配置
- * Created by macro on 2019/7/27.
- *
- * @Configuration可理解为用spring的时候xml里面的<beans>标签
- * @Bean可理解为用spring的时候xml里面的<bean>标签
- */
+ * @program: ego-mall
+ * @author: ShyBlue
+ * @create: 2020-06-18 10:58
+ **/
 @Configuration
 public class GlobalCorsConfig {
     /**

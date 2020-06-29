@@ -4,11 +4,12 @@ import com.macro.mall.model.UmsResource;
 
 import java.util.List;
 
-/**
- * 后台资源管理Service
- * Created by macro on 2020/2/2.
- */
 public interface UmsResourceService {
+    /**
+     * 查询全部资源
+     */
+    List<UmsResource> listAll();
+
     /**
      * 添加资源
      */
@@ -34,8 +35,7 @@ public interface UmsResourceService {
      */
     List<UmsResource> list(Long categoryId, String nameKeyword, String urlKeyword, Integer pageSize, Integer pageNum);
 
-    /**
-     * 查询全部资源
-     */
-    List<UmsResource> listAll();
+
+
+
 }

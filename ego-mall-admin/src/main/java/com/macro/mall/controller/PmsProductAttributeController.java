@@ -3,7 +3,6 @@ package com.macro.mall.controller;
 import com.macro.mall.common.api.CommonPage;
 import com.macro.mall.common.api.CommonResult;
 import com.macro.mall.dto.PmsProductAttributeParam;
-import com.macro.mall.dto.ProductAttrInfo;
 import com.macro.mall.model.PmsProductAttribute;
 import com.macro.mall.service.PmsProductAttributeService;
 import io.swagger.annotations.Api;
@@ -18,13 +17,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 商品属性管理Controller
- * Created by macro on 2018/4/26.
- */
+ * @program: ego-mall
+ * @author: ShyBlue
+ * @create: 2020-06-24 17:15
+ **/
 @Controller
 @Api(tags = "PmsProductAttributeController", description = "商品属性管理")
 @RequestMapping("/productAttribute")
 public class PmsProductAttributeController {
+
     @Autowired
     private PmsProductAttributeService productAttributeService;
 
@@ -36,7 +37,7 @@ public class PmsProductAttributeController {
                                                                  @RequestParam(value = "type") Integer type,
                                                                  @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize,
                                                                  @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum) {
-        List<PmsProductAttribute> productAttributeList = productAttributeService.getList(cid, type, pageSize, pageNum);
+        List<PmsProductAttribute> productAttributeList = productAttributeService.list(cid, type, pageSize, pageNum);
         return CommonResult.success(CommonPage.restPage(productAttributeList));
     }
 
@@ -84,11 +85,11 @@ public class PmsProductAttributeController {
         }
     }
 
-    @ApiOperation("根据商品分类的id获取商品属性及属性分类")
-    @RequestMapping(value = "/attrInfo/{productCategoryId}", method = RequestMethod.GET)
-    @ResponseBody
-    public CommonResult<List<ProductAttrInfo>> getAttrInfo(@PathVariable Long productCategoryId) {
-        List<ProductAttrInfo> productAttrInfoList = productAttributeService.getProductAttrInfo(productCategoryId);
-        return CommonResult.success(productAttrInfoList);
-    }
+//    @ApiOperation("根据商品分类的id获取商品属性及属性分类")
+//    @RequestMapping(value = "/attrInfo/{productCategoryId}", method = RequestMethod.GET)
+//    @ResponseBody
+//    public CommonResult<List<ProductAttrInfo>> getAttrInfo(@PathVariable Long productCategoryId) {
+//        List<ProductAttrInfo> productAttrInfoList = productAttributeService.getProductAttrInfo(productCategoryId);
+//        return CommonResult.success(productAttrInfoList);
+//    }
 }

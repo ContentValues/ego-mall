@@ -1,41 +1,49 @@
 package com.macro.mall.config;
 
-import com.macro.mall.model.UmsResource;
 import com.macro.mall.security.component.DynamicSecurityService;
-import com.macro.mall.security.config.SecurityConfig;
 import com.macro.mall.service.UmsAdminService;
 import com.macro.mall.service.UmsResourceService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.ConfigAttribute;
+import com.macro.mall.security.config.SecurityConfig;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import java.util.List;
+import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * mall-security模块相关配置
- * Created by macro on 2019/11/9.
- */
+ * @program: ego-mall
+ * @author: ShyBlue
+ * @create: 2020-06-18 14:39
+ **/
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class MallSecurityConfig extends SecurityConfig {
 
-    @Autowired
-    private UmsAdminService adminService;
-    @Autowired
-    private UmsResourceService resourceService;
+    @Resource
+    UmsAdminService umsAdminService;
+
+    @Resource
+    UmsResourceService umsResourceService;
 
     @Bean
     public UserDetailsService userDetailsService() {
         //获取登录用户信息
-        return username -> adminService.loadUserByUsername(username);
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+                return umsAdminService.loadUserByUsername(username);
+            }
+        };
     }
+
 
     @Bean
     public DynamicSecurityService dynamicSecurityService() {
@@ -43,10 +51,9 @@ public class MallSecurityConfig extends SecurityConfig {
             @Override
             public Map<String, ConfigAttribute> loadDataSource() {
                 Map<String, ConfigAttribute> map = new ConcurrentHashMap<>();
-                List<UmsResource> resourceList = resourceService.listAll();
-                for (UmsResource resource : resourceList) {
-                    map.put(resource.getUrl(), new org.springframework.security.access.SecurityConfig(resource.getId() + ":" + resource.getName()));
-                }
+                umsResourceService.listAll().forEach(umsResource -> {
+                    map.put(umsResource.getUrl(), new org.springframework.security.access.SecurityConfig(umsResource.getId() + ":" + umsResource.getName()));
+                });
                 return map;
             }
         };
