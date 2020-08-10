@@ -13,6 +13,7 @@
         <module>ego-mall-security</module>
 <!--        <module>ego-mall-test</module>-->
         <module>ego-mall-admin</module>
+        <module>ego-mall-protal</module>
     </modules>
     <packaging>pom</packaging>
 
